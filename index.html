@@ -1,0 +1,1909 @@
+
+<!DOCTYPE html>
+<!-- Updated: 06-26-2017 -->
+<!-- Fixed bug adding extra zeros -->
+<!-- Made yDomain scale automatically -->
+<!-- Made inputs able to accept commas or spaces -->
+<!-- Made data sorted on form input -->
+<!-- Fixed "0" bug, where it deleted all zeros in a dataset. -->
+
+<?php header('Access-Control-Allow-Origin: *'); ?>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="googlebot" content="noindex, nofollow">
+
+  <script type="text/javascript" src="//code.jquery.com/jquery-3.1.1.js"></script>
+  <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+  <script type="text/javascript" src="https://perceptionexperiments.net/SDU/VC/beeswarm.min.js"></script>
+  <script type="text/javascript" src="https://evanplaice.github.io/jquery-csv/src/jquery.csv.min.js"></script>
+  <script type="text/javascript" src="https://perceptionexperiments.net/SDU/Libraries/FileSaver.js"></script>
+  <script type="text/javascript" src="https://perceptionexperiments.net/SDU/Libraries/rgbcolor.js"></script>
+  <script type="text/javascript" src="https://perceptionexperiments.net/SDU/Libraries/canvg.js"></script>
+  <script type="text/javascript" src="https://perceptionexperiments.net/SDU/Libraries/svgenie.js"></script>
+  <script type="text/javascript" src="https://perceptionexperiments.net/SDU/Libraries/d3-save-svg.min.js"></script>
+  <script type="text/javascript" src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+  <script type="text/javascript" src="https://perceptionexperiments.net/SDU/Libraries/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="https://perceptionexperiments.net/SDU/Libraries/UI-Sidebar-master/sidebar.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://perceptionexperiments.net/SDU/Libraries/bootstrap-3.3.7-dist/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" type="text/css" href="https://perceptionexperiments.net/SDU/Libraries/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+  <script type="text/javascript" src="https://perceptionexperiments.net/SDU/Libraries/jscolor.min.js"></script>
+  <script type="text/javascript" src="https://perceptionexperiments.net/SDU/Libraries/tooltipster-master/dist/js/tooltipster.bundle.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://perceptionexperiments.net/SDU/Libraries/tooltipster-master/dist/css/tooltipster.bundle.min.css">
+  <link rel="stylesheet" type="text/css" href="https://perceptionexperiments.net/SDU/Libraries/UI-Sidebar-master/sidebar.min.css">
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.0/themes/smoothness/jquery-ui.css">
+
+  <style type="text/css">
+    /* Turn off number spinners -- the arrows */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance:textfield;
+}
+
+body {
+    font: normal 16px Helvetica, Arial, sans-serif;
+    background: #C8C8C8;     
+}
+
+input {
+  text-align: center;
+}
+
+body.pushable{
+  overflow: auto;
+  white-space: nowrap; 
+  background: #C8C8C8 !important;
+}
+
+.ToolTip {
+  text-decoration: underline;
+  text-decoration-style: dotted; /* Only works with Firefox */
+}
+
+.pusher {
+  background: #C8C8C8 !important;
+}
+
+.ui.sidebar{
+  background: white;
+  border-style: solid;
+  border-color: #000;
+  border-width: 4px;
+  border-radius: 5px !important;
+  margin-bottom: 40px;
+  padding-bottom: 10px;
+  z-index: 1000 !important;
+  height: 97% !important;
+  max-height: 97% !important;
+  -webkit-box-sizing: content-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: content-box;    /* Firefox, other Gecko */
+  box-sizing: content-box;         /* Opera/IE 8+ */
+}
+
+#sideBarContainer {
+  box-shadow: 10px 10px 5px rgba(0,0,0,0.2);
+}
+
+.container{
+  max-width: 475px;
+}
+.fa {
+  margin-right: 8px;
+}
+.glyphicon {
+  font-weight: bold;
+  font-size: 20px;
+}
+.form-horizontal .control-label {
+  text-align: left;
+}
+.form-control {
+  height: 35px;
+}
+
+.input-group[class*="col-"]{
+  padding-left: 15px;
+  padding-right: 15px;
+}
+.col-sm-4.input-group, .col-sm-5.input-group {
+  margin: 0 auto;
+}
+.btn-block {
+  width: 30%;
+  margin: 0 auto;
+}
+.panel {
+  border-color: #323232;
+  border-width: 2px;
+}
+
+.panel-body{
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.panel-heading {
+    cursor: pointer;
+}
+
+.panel-default > .panel-heading-custom {
+    background: #323232;/* #2980b9; */
+    color: #FFF;
+    border-color: #323232;
+    border-radius: 0px;
+}
+
+.panel-title{
+  font-weight: bold;
+  font-size: 18px;
+}
+
+/* Make sure the title is underlined when the mouse is over the panel*/
+.panel:hover .panel-title {
+  text-decoration: underline;
+}
+
+
+/* CSS Method for adding Font Awesome Chevron Icons */
+.panel-heading .accordion-toggle:before {
+    /* symbol for "opening" panels */
+    font-family:'FontAwesome';
+    content:"\f077";
+    float: right;
+    color: inherit;
+}
+
+.panel-heading.collapsed .accordion-toggle:before {
+    /* symbol for "collapsed" panels */
+    content:"\f078";
+}
+
+.panel-group .panel+.panel {
+  margin-top: 10px;
+}
+.custom-file-button {
+    margin-left: 30px;
+    border-radius: 4px;
+    border-style: solid;
+    border-color: #323232;
+    border-width: 3px;
+    background: #323232; /* #2196F3; */
+    color: #FFF;
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+    width: 175px;
+    font-size: 20px;
+    font-weight: normal;
+}
+.custom-file-button:hover{
+  background: #F0F0F0; /* #17BDFF; */
+  border-style: solid;
+  border-color: #000;
+  border-width: 3px;
+  color: #000;
+}
+
+#file {
+  display:none;
+}
+
+#fileLabel {
+  margin-left: 0px;
+  text-decoration: none;
+}
+
+.header{
+  text-align:center;
+  text-decoration: underline;
+  margin-bottom: 28px;
+}
+
+.buttonHolder{
+  margin: 20px auto;
+  margin-bottom: 30px;
+  text-align:center;
+}
+
+#svgHolder{
+  display: block;
+  position: relative;
+  margin: 30px auto 30px auto;
+}
+svg{
+    display:block;
+    position: relative;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-size: 12px;
+}
+
+#horizontalAxis text {
+    font-size: 20px;
+}
+
+
+/* On-off switch, generated by https://proto.io/freebies/onoff/ */
+.onoffswitch {
+    position: relative; 
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+.onoffswitch-checkbox {
+    display: none;
+}
+.onoffswitch-label {
+    display: block; overflow: hidden; cursor: pointer;
+    border: 2px solid #000000; border-radius: 20px;
+    margin: 0 auto;
+    width: 100px;
+}
+.onoffswitch-inner {
+    display: block; width: 200%; margin-left: -100%;
+    transition: margin 0.3s ease-in 0s;
+}
+.onoffswitch-inner:before, .onoffswitch-inner:after {
+    display: block; float: left; width: 50%; height: 34px; padding: 0; line-height: 34px;
+    font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+    box-sizing: border-box;
+}
+.onoffswitch-inner:before {
+    content: "ON";
+    padding-left: 10px;
+    background-color: #5CB85C; color: #FFFFFF;
+}
+.onoffswitch-inner:after {
+    content: "OFF";
+    padding-right: 10px;
+    background-color: #EEEEEE; color: #999999;
+    text-align: right;
+}
+.onoffswitch-switch {
+    display: block; width: 20px; height: 20px; margin: 8px;
+    background: #FFFFFF;
+    position: relative; top: 0; bottom: 0;
+    right: 60px;
+    margin: 7px auto 7px 67px;
+    border: 2px solid #000000; border-radius: 20px;
+    transition: all 0.3s ease-in 0s; 
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+    margin-left: 0;
+}
+
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+    right: 0px; 
+}
+
+/*Keeps the average button centered, assuming it's a .col-sm-4 (from Bootstratp)*/
+#toggleAveragesDiv {
+  margin-left: 16.66666%;
+}
+
+#dataEntryFormGroup .col-sm-8{
+  padding-bottom:15px;
+}
+
+#errorMessage {
+  text-align: center;
+  display: none;
+  word-wrap: break-word;
+  white-space: normal;
+}
+  </style>
+
+  <title>Beeswarm Plotting Tool -- Sidebar by rahonavis75</title>
+
+  
+</head>
+
+<body>
+  <body>
+
+  <div id="sideBarContainer" class="ui very wide sidebar">
+    <div id="optionsHolder" class="container">
+      <h1 id="optionsHeading" class="header">Options</h1>
+      <div class="panel-group" id="accordion">
+
+        <!-- General panel -->
+        <div class="panel panel-default">
+          <div class="panel-heading panel-heading-custom collapsed" data-toggle="collapse" data-parent="#accordion" data-target="#generalPanel">
+            <h4 class="panel-title">
+              <a class="accordion-toggle">General</a>
+            </h4>
+          </div>
+          <div id="generalPanel" class="panel-collapse collapse">
+            <div class="panel-body">
+              <!-- General options -->
+              <form class="form-horizontal">
+                
+                <!-- Title Font Size -->
+                <div class="form-group">
+                  <label for="titleFontSize" id="titleFontSizeLabel" class="col-sm-4 control-label ToolTip" title="Use the plus and minus buttons to change the size, or simply type your own preferred value. All such values are in pixels, unless otherwise specified.">Graph Title Font Size</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="titleFontSizeMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="titleFontSize" step="0.5">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="titleFontSize" step="0.5" min="1">
+                    <span class="input-group-btn">
+                      <button id="titleFontSizePlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="titleFontSize" step="0.5">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+                <!-- Graph Title -->
+                <div class="form-group">
+                  <label for="graphTitleEditor" id="graphTitleEditorLabel" class="col-sm-4 control-label">Graph Title</label>
+                  <div class="col-sm-8">
+                    <input class="form-control" type="text" id="graphTitleEditor">
+                  </div>    
+                </div>
+
+                <!-- Font name -->
+                <div class="form-group">                
+                  <label for="fontName" id="fontNameLabel" class="col-sm-4 control-label">Font Name</label>
+                  <div class="col-sm-8">
+                    <input class="form-control" type="text" id="fontName">
+                  </div>    
+                </div>
+
+              </form>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Data panel -->
+        <div class="panel panel-default">
+          <div class="panel-heading panel-heading-custom collapsed" data-toggle="collapse" data-parent="#accordion" data-target="#dataPanel">
+            <h4 class="panel-title">
+              <a class="accordion-toggle">Data</a>
+            </h4>
+          </div>
+
+          <!-- Data Options -->
+          <div id="dataPanel" class="panel-collapse collapse">
+            <div class="panel-body">            
+              <form class="form-horizontal">
+                
+                <!-- Show Averages -->
+                <div class="form-group">                
+                  
+                  <label for="toggleAverages" id="toggleAveragesLabel" class="col-sm-4 control-label ToolTip" title="Toggle the horizontal bars showing the averages on the graph. You can customize their size using the options below.">Show Averages</label>
+                  <div id="toggleAveragesDiv" class="onoffswitch col-sm-4">
+
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="toggleAverages" checked>
+                    <label class="onoffswitch-label" for="toggleAverages">
+                        <span class="onoffswitch-inner"></span>
+                        <span class="onoffswitch-switch"></span>
+                    </label>
+                 </div>
+
+                </div>
+
+                <!-- Bar Width -->
+                <div class="form-group">
+                  <label for="barWidth" id="barWidthLabel" class="col-sm-4 control-label">Average Bar Width</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="barWidthMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="barWidth" step="1">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="barWidth" step="1">
+                    <span class="input-group-btn">
+                      <button id="barWidthPlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="barWidth" step="1">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+
+                <!-- Bar Height/Thickness -->
+                <div class="form-group">
+                  <label for="barHeight" id="barHeightLabel" class="col-sm-4 control-label">Average Bar Thickness</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="barHeightMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="barHeight" step="1">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="barHeight" step="1">
+                    <span class="input-group-btn">
+                      <button id="barHeightPlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="barHeight" step="1">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+
+                <!-- Dot Radius -->
+                <div class="form-group">
+                  <label for="dotRadius" id="dotRadiusLabel" class="col-sm-4 control-label">Dot Radius</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="dotRadiusMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="dotRadius" step="0.5">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="dotRadius" step="0.5">
+                    <span class="input-group-btn">
+                      <button id="dotRadiusPlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="dotRadius" step="0.5">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+                  
+                <!-- Dot Spacing Radius -->
+                <div class="form-group">
+                  <label for="dotSpacingRadius" id="dotSpacingRadiusLabel" class="col-sm-4 control-label ToolTip" title="Make this bigger than the dot radius if you don't want the dots to touch.">Dot Spacing Radius</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="dotSpacingRadiusMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="dotSpacingRadius" step="0.5">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="dotSpacingRadius" step="0.5">
+                    <span class="input-group-btn">
+                      <button id="dotSpacingRadiusPlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="dotSpacingRadius" step="0.5">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+                <!-- Data Colors -->
+                <div class="form-group">
+                  <label for="dataColors" id="dataColorsLabel" class="col-sm-4 control-label ToolTip" title="The colors for the beeswarms. Color names should be in hexadecimal and separated by commas or spaces. Needs at least one color value.">Data Colors</label>
+                  <div class="col-sm-8">
+                    <input class="form-control" type="text" id="dataColors">
+                  </div>
+
+                </div>
+
+                <!-- Color picker -->
+                <div class="form-group">
+                  <label for="colorPicker" id="colorPickerLabel" class="col-sm-4 control-label ToolTip" title="Just a color picker to help you choose colors for the beeswarms. Feel free to paste the value you choose into the 'Data Colors' section.">Color Picking Tool</label>
+                  <div class="col-sm-8">
+                    <input class="form-control jscolor {hash:true}" type="text" id="colorPicker">
+                  </div>
+
+                </div>
+
+                <!-- Data Entry -->
+                <br/>
+                <h2 id="dataEntryHeading" class="header ToolTip" title="You can paste your own data here if you don't want to load it in CSV format. Make sure they're separated by commas or spaces. Spaces between data points are fine, but note that they will be replaced by commas.">Data Entry</h2>
+
+                <!-- Number of Beeswarms, or Total Group Number -->
+                <div class="form-group">
+                  <label for="numBeeswarms" id="numBeeswarmsLabel" class="col-sm-4 control-label">Total Beeswarm #</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="numBeeswarmsMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="numBeeswarms" step="1">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="numBeeswarms" step="1">
+                    <span class="input-group-btn">
+                      <button id="numBeeswarmsPlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="numBeeswarms" step="1">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+                <div class="form-group" id="dataEntryFormGroup">
+
+                  <label for="dataGroup1" id="dataGroup1Label" class="col-sm-4 control-label">Beeswarm 1</label>
+                  <div class="col-sm-8">
+                    <input class="form-control beeswarm-data" type="text" id="dataGroup1">
+                  </div>
+
+                  <label for="dataGroup2" id="dataGroup2Label" class="col-sm-4 control-label">Beeswarm 2</label>
+                  <div class="col-sm-8">
+                    <input class="form-control beeswarm-data" type="text" id="dataGroup2">
+                  </div>
+
+                  <label for="dataGroup3" id="dataGroup3Label" class="col-sm-4 control-label">Beeswarm 3</label>
+                  <div class="col-sm-8">
+                    <input class="form-control beeswarm-data" type="text" id="dataGroup3">
+                  </div>
+
+                  <label for="dataGroup4" id="dataGroup4Label" class="col-sm-4 control-label">Beeswarm 4</label>
+                  <div class="col-sm-8">
+                    <input class="form-control beeswarm-data" type="text" id="dataGroup4">
+                  </div>
+
+                  <label for="dataGroup5" id="dataGroup5Label" class="col-sm-4 control-label">Beeswarm 5</label>
+                  <div class="col-sm-8">
+                    <input class="form-control beeswarm-data" type="text" id="dataGroup5">
+                  </div>
+
+                  <label for="dataGroup6" id="dataGroup6Label" class="col-sm-4 control-label">Beeswarm 6</label>
+                  <div class="col-sm-8">
+                    <input class="form-control beeswarm-data" type="text" id="dataGroup6">
+                  </div>
+
+                  <label for="dataGroup7" id="dataGroup7Label" class="col-sm-4 control-label">Beeswarm 7</label>
+                  <div class="col-sm-8">
+                    <input class="form-control beeswarm-data" type="text" id="dataGroup7">
+                  </div>
+
+                  <label for="dataGroup8" id="dataGroup8Label" class="col-sm-4 control-label">Beeswarm 8</label>
+                  <div class="col-sm-8">
+                    <input class="form-control beeswarm-data" type="text" id="dataGroup8">
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>          
+        </div>
+
+
+
+        <!-- Axis Panel -->
+        <div class="panel panel-default"> <!-- can also do panel-primary-->
+          <div class="panel-heading panel-heading-custom collapsed" data-toggle="collapse" data-parent="#accordion" data-target="#axisPanel">
+            <h4 class="panel-title">
+              <a class="accordion-toggle">Axis</a>
+            </h4>
+          </div>
+          <!-- Axis Options -->
+          <div id="axisPanel" class="panel-collapse collapse">
+            <div class="panel-body">            
+              <form class="form-horizontal">
+
+                <!-- Rect Width -->
+                <div class="form-group">
+                  <label for="rectWidth" id="rectWidthLabel" class="col-sm-4 control-label">Canvas Width</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="rectWidthMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="rectWidth" step="10">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="rectWidth" step="10" min="1">
+                    <span class="input-group-btn">
+                      <button id="rectWidthPlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="rectWidth" step="10">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+                <!-- Rect Height -->
+                <div class="form-group">
+                  <label for="rectHeight" id="rectHeightLabel" class="col-sm-4 control-label">Canvas Height</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="rectHeightMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="rectHeight" step="10">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="rectHeight" step="10" min="1">
+                    <span class="input-group-btn">
+                      <button id="rectHeightPlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="rectHeight" step="10">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+                <!-- Vertical Axis Minimum -->
+                <div class="form-group">
+                  <label for="yMin" id="yMinLabel" class="col-sm-4 control-label">Vert. Axis Min. Val.</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="yMinMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="yMin" step="0.5">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="yMin" step="0.5">
+                    <span class="input-group-btn">
+                      <button id="yMinPlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="yMin" step="0.5">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+                <!-- Vertical Axis Maximum -->
+                <div class="form-group">
+                  <label for="yMax" id="yMaxLabel" class="col-sm-4 control-label">Vert. Axis Max. Val.</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="yMaxMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="yMax" step="0.5">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="yMax" step="0.5">
+                    <span class="input-group-btn">
+                      <button id="yMaxPlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="yMax" step="0.5">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+                <!-- Vertical Axis Font Size -->
+                <div class="form-group">
+                  <label for="verticalAxisFontSize" id="verticalAxisFontSizeLabel" class="col-sm-4 control-label">Vert. Axis Font Size</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="verticalAxisFontSizeMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="verticalAxisFontSize" step="0.5">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="verticalAxisFontSize" step="0.5">
+                    <span class="input-group-btn">
+                      <button id="verticalAxisFontSizePlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="verticalAxisFontSize" step="0.5">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+                <!-- Vertical Axis Tick Padding -->
+                <div class="form-group">
+                  <label for="verticalAxisTickPadding" id="verticalAxisTickPaddingLabel" class="col-sm-4 control-label ToolTip" title="Horizontal distance between numerical labels and tick marks on the vertical axis.">Vert. Axis Tick Padding</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="verticalAxisTickPaddingMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="verticalAxisTickPadding" step="0.5">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="verticalAxisTickPadding" step="0.5">
+                    <span class="input-group-btn">
+                      <button id="verticalAxisTickPaddingPlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="verticalAxisTickPadding" step="0.5">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+                <!-- Vertical Axis Label Font Size -->
+                <div class="form-group">
+                  <label for="verticalAxisLabelFontSize" id="verticalAxisLabelFontSizeLabel" class="col-sm-4 control-label">Vert. Axis Label Size</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="verticalAxisLabelFontSizeMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="verticalAxisLabelFontSize" step="0.5">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="verticalAxisLabelFontSize" step="0.5">
+                    <span class="input-group-btn">
+                      <button id="verticalAxisLabelFontSizePlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="verticalAxisLabelFontSize" step="0.5">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+                <!-- Vertical Axis Label Padding/Distance -->
+                <div class="form-group">
+                  <label for="verticalAxisLabelPadding" id="verticalAxisLabelPaddingLabel" class="col-sm-4 control-label ToolTip" title="Horizontal distance between the vertical axis label and the left edge of the canvas frame.">Vert. Axis Label Distance</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="verticalAxisLabelPaddingMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="verticalAxisLabelPadding" step="0.5">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="verticalAxisLabelPadding" step="0.5">
+                    <span class="input-group-btn">
+                      <button id="verticalAxisLabelPaddingPlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="verticalAxisLabelPadding" step="0.5">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+                <!-- Horizontal Axis Font Size -->
+                <div class="form-group">
+                  <label for="horizontalAxisFontSize" id="horizontalAxisFontSizeLabel" class="col-sm-4 control-label">Horiz. Axis Font Size</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="horizontalAxisFontSizeMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="horizontalAxisFontSize" step="0.5">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="horizontalAxisFontSize" step="0.5">
+                    <span class="input-group-btn">
+                      <button id="horizontalAxisFontSizePlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="horizontalAxisFontSize" step="0.5">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+                <!-- Horizontal Axis Label Padding -->
+                <div class="form-group">
+                  <label for="horizontalAxisLabelPadding" id="horizontalAxisLabelPaddingLabel" class="col-sm-4 control-label ToolTip" title="Vertical distance between group labels and tick marks on the horizontal axis.">Horiz. Axis Label Padding</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="horizontalAxisLabelPaddingMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="horizontalAxisLabelPadding" step="0.5">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="horizontalAxisLabelPadding" step="0.5">
+                    <span class="input-group-btn">
+                      <button id="horizontalAxisLabelPaddingPlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="horizontalAxisLabelPadding" step="0.5">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div>
+
+                <!-- Axis Stroke Width -->
+                <div class="form-group">
+                  <label for="axisStroke" id="axisStrokeLabel" class="col-sm-4 control-label">Axis Stroke Width</label>
+                  <div class="col-sm-5 input-group">
+                    <span class="input-group-btn">
+                      <button id="axisStrokeMinus" type="button" class="minus btn btn-danger btn-number"  data-type="minus" data-field="axisStroke" step="0.5">
+                        <span class="glyphicon glyphicon-minus"></span>
+                      </button>
+                    </span>
+                    <input class="form-control input-number" type="number" id="axisStroke" step="0.5">
+                    <span class="input-group-btn">
+                      <button id="axisStrokePlus" type="button" class="plus btn btn-success btn-number"  data-type="plus" data-field="axisStroke" step="0.5">
+                        <span class="glyphicon glyphicon-plus"></span>
+                      </button>
+                    </span>
+                  </div>    
+                </div> 
+
+                <!-- Axis Stroke Color -->
+                <div class="form-group">
+
+                  <label for="axisColor" id="axisColorLabel" class="col-sm-4 control-label ToolTip" title="Click on the input box to choose a new color.">Axis Stroke Color</label>
+                  <div class="col-sm-8">
+                    <input class="form-control jscolor {hash:true}" type="text" id="axisColor">
+                  </div>
+
+                </div>
+
+                <!-- Horizontal Axis Labels -->
+                <div class="form-group">
+                  
+                  <label for="horizontalAxisLabels" id="horizontalAxisLabelsLabel" class="col-sm-4 control-label ToolTip" title="The labels for the various beeswarms. Make sure they are separated by commas or spaces!">Group Labels</label>
+                  <div class="col-sm-8">
+                    <input class="form-control" type="text" id="horizontalAxisLabels">
+                  </div>    
+
+                </div>
+
+                <!-- Veritcal Axis Title -->
+                <div class="form-group">
+                  
+                  <label for="verticalAxisLabelInput" id="VerticalAxisLabelInputLabel" class="col-sm-4 control-label">Vertical Axis Title</label>
+                  <div class="col-sm-8">
+                    <input class="form-control" type="text" id="verticalAxisLabelInput">
+                  </div>    
+
+                </div>
+
+              </form> 
+              
+            </div>
+          </div>
+        </div>        
+
+        <!-- About panel -->
+        <div class="panel panel-default">
+          <div class="panel-heading panel-heading-custom" data-toggle="collapse" data-parent="#accordion" data-target="#aboutPanel"> <!-- add "collapsed" to class to make the chevron start off pointing down.-->
+            <h4 class="panel-title">
+              <a class="accordion-toggle">About</a>
+            </h4>
+          </div>
+          <div id="aboutPanel" class="panel-collapse collapse in">
+            <div class="panel-body">
+            <p>
+              This is a tool designed to help you create beeswarm plots — a kind of one-dimensional scatterplot that shows every point in a data distribution. You can load your own data in CSV format (using the 'Load CSV' button above the graph), or enter your own comma-separated data (using the 'Data' tab above). You can also customize the appearance of the graph using the various options located in this menu, and then save your graph in either SVG or PNG format using the buttons above the graph. This tool works best on Google Chrome and Firefox.
+            </p> 
+
+
+            <p>
+              For more details, please see the following paper: Uddenberg, S., & Scholl, B. J. (under review). Perceptual averaging in visual communication: Ensemble representations in the perception of scientific data in graphs. 
+              <br /><br /> 
+              If you have any questions, please contact the author, Stefan Uddenberg, at <a href="mailto:stefan.uddenberg@yale.edu">stefan.uddenberg@yale.edu</a>.
+            </p>
+            </div>
+          </div>
+        </div>
+
+      </div> 
+    </div>
+  </div>
+  <div id="pageContent" class="pusher">
+    <div id="buttonHolder1" class="buttonHolder">
+      <label for="file" class="custom-file-button ToolTip" id="fileLabel" title="Load a CSV with your data in it. Each row corresponds to a different beeswarm, with each cell representing a single datapoint.">
+        <i class="fa fa-file-text"></i>  Load CSV
+      </label>
+      <input type="file" id="file" name="file"/>
+      <button id='save' class="custom-file-button">
+        <i class="fa fa-floppy-o"></i>  Save SVG
+      </button>
+      <button id='saveAsPNG' class="custom-file-button">
+        <i class="fa fa-photo"></i>  Save PNG
+      </button>
+    </div>
+    <h4 id="errorMessage">There was an error getting the data CSV. Feel free to load your own data using the button above, or the 'Data Entry' section in the 'Options' menu to the left.</h4>
+    <div id="svgHolder"></div>
+  </div>
+  
+</body>    
+  
+
+
+
+
+<script type='text/javascript'>//<![CDATA[
+
+// BEESWARM PLOTTING TOOL
+// TO DO:
+//  - add author info and link to website.
+
+//
+// NOTES:
+//  - jquery-ui 1.9.2 has a different folding effect. Selecting the older jquery from the list gives you the option of using the older jquery-ui.
+
+// folding divs with jquery-ui: $('#buttonHolder1').toggle("fold",200);
+var sideBarOn = 0;
+var csvName = 'https://crossorigin.me/https://perceptionexperiments.net/SDU/VC/BeeswarmTool/TestData.csv';
+var fontName = 'Helvetica';
+var titleFontSize = 30;
+var horizontalAxisFontSize = 20;
+var verticalAxisFontSize = 12;
+var verticalAxisLabelFontSize = 20;
+var alphabet = 'ABCDEFGHIJLMNOPQRSTUVWXYZ'.split("");
+var yDomain;
+var xDomain = [];
+var graphTitle = 'Example Data';
+var verticalAxisLabel = 'Y Axis Title';
+var barColors = ['#F23557', '#F0D43A', '#22B2DA', '#3B4A6B']; // nice wes andersony palette
+//var barColors = ['#364F6B', '#3FC1C9', '#FCE38A', '#FC5185']; // alternative wes andersony kind of palette
+//var barColors = ['#5B7D9C','#3F9BA9','#39B6A5','#65CE92','#A5E27A','#EFEE69']; // blue-green gradient
+var dotColorOn = 1; // whether or not the dot will have the same color as the bars
+var dotStrokeOn = 0;
+var dotStrokeColor = "#000000";
+var dotStrokeWidth = 1;
+var titleOn = 1;
+var showAverages = 1;
+var useScaledData = 1; // use this for raw data — leave justify and center off.
+if (useScaledData == 0) {
+  var leftJustifyOn = 1; // whether or not to left justify the data or have it centered
+  var centerOn = 0; // whether or not to do a centered beeswarm plot
+} else {
+  var leftJustifyOn = 0; // whether or not to left justify the data or have it centered
+  var centerOn = 0; // whether or not to do a centered beeswarm plot
+}
+
+var rectWidth = 600;
+var rectHeight = 400;
+var rectStrokeWidth = 4;
+var rectBorderRadius = 5; // for rounded corners
+var minPageWidth = rectWidth + rectStrokeWidth;
+var rectBackgroundColor = "#FFF"; // hex code for color #F9F9F9
+var rectStrokeColor = "#000";
+var widthPadding = 80; // 30
+var heightPadding = 60; // 30
+var justifyPadding = 30;
+var xAxisTickPadding = 15; // vertical distance between axis and label
+var yAxisTickPadding = 5; // horizontal distance between axis and numerical label
+var yAxisLabelPadding = widthPadding/5; // horizontal distance between left edge of rect and text label (positive values go to the right)
+var dotRadius = 2;
+var spacingRadius = 3;
+var barWidth = 60;
+var barHeight = 4;
+var axisStrokeWidth = 3;
+var axisStrokeColor = "#000000";
+
+var numDataInputFields = 8; 
+var dataInputFieldPrefix = "dataGroup";
+var barNamePrefix = "barElement";
+var origData, allData, stringData, finalData, intermediateData, scaledData, formData, csvData;
+var numBeeswarms, previousNumBeeswarms;
+var xScale, yScale, xAxis, yAxis;
+var correctAverages, numDatapoints, minVals, maxVals;
+
+document.getElementById('save').onclick = function() {
+
+  var config = {
+    filename: 'customFileName',
+  };
+  d3_save_svg.save(d3.select('svg').node(), config);
+  createBeeswarm(formData, false);
+};
+
+document.getElementById('saveAsPNG').onclick = function() {
+  svgenie.save( "#mySVG", {
+    name : "customFileName.png"
+  });
+};
+
+$(document).ready(function() {
+  
+  // set up tooltips
+  $('.ToolTip').tooltipster();
+
+  // Initialize sidebar
+  $('.sidebar')
+      .sidebar({
+        dimPage: false, 
+        closable: false,
+        scrollLock: false
+      });
+
+  // Turn sidebar on
+  if (sideBarOn==0) {
+    $('.ui.sidebar').sidebar('toggle');
+    // Scroll to center after animation is done.
+    // setTimeout(function () {
+    //   var left = $('body').width();
+    //   var sideBarWidth = $('#sideBarContainer').width();
+    //   if (left-sideBarWidth > rectWidth) {
+    //     $('body').scrollLeft(left/6);  
+    //   };      
+    // }, 500);    
+    sideBarOn = 1;
+    
+  }
+  // Do the thing.
+  getCSV(csvName);
+  if( isAPIAvailable() ) {
+    $('#file').on('change', handleFileSelect);
+  }
+
+});
+
+// Dynamic resizing
+$(window).on('load resize', function(){
+  autoResize();
+});
+
+function autoResize() {
+  var windowWidth = $(window).width();
+  // var pageWidth = $('body').width();
+  var sideBarWidth = $('#sideBarContainer').width();
+
+  var newPageWidth = windowWidth - sideBarWidth; // an extra padding of 25 just in case
+
+  if (newPageWidth <= (rectWidth + 50)) {
+    newPageWidth = rectWidth + 50;
+  }
+
+  if (newPageWidth > minPageWidth) {
+    $('body').width(newPageWidth+"px");
+  }
+}
+
+// Buttons and inputs
+// Generic Plus and Minus buttons
+$('.btn-number').click(function(e){
+  e.preventDefault();
+  
+  var fieldName = $(this).attr('data-field');
+  var type      = $(this).attr('data-type');
+  var increment = parseFloat($(this).attr('step'));
+  if (!increment) increment = 1;
+  var input = $("input[id='"+fieldName+"']");
+  var currentVal = parseFloat(input.val());
+  if (!isNaN(currentVal)) {
+      if(type == 'minus') {
+          var minValue = parseFloat(input.attr('min')); 
+          if(!minValue) minValue = -9999999999999;
+          if(currentVal > minValue) {
+              input.val(currentVal - increment).change();
+          } 
+          if(parseFloat(input.val()) == minValue) {
+              $(this).attr('disabled', true);
+          }
+
+      } else if(type == 'plus') {
+          var maxValue = parseFloat(input.attr('max'));
+          if(!maxValue) maxValue = 9999999999999;
+          if(currentVal < maxValue) {
+              input.val(currentVal + increment).change();
+          }
+          if(parseFloat(input.val()) == maxValue) {
+              $(this).attr('disabled', true);
+          }
+
+      }
+  } else {
+      input.val(0);
+  }
+});
+$('.input-number').focusin(function(){
+ $(this).data('oldValue', $(this).val());
+});
+$('.input-number').change(function() {
+  
+  var minValue =  parseFloat($(this).attr('min'));
+  var maxValue =  parseFloat($(this).attr('max'));
+  if(!minValue) minValue = -9999999999999;
+  if(!maxValue) maxValue = 9999999999999;
+  var valueCurrent = parseFloat($(this).val());
+  
+  var name = $(this).attr('name');
+  if(valueCurrent >= minValue) {
+      $(".btn-number[data-type='minus'][data-field='"+name+"']").removeAttr('disabled');
+  } else {
+      alert('Sorry, the minimum value was reached');
+      $(this).val($(this).data('oldValue'));
+  }
+  if(valueCurrent <= maxValue) {
+      $(".btn-number[data-type='plus'][data-field='"+name+"']").removeAttr('disabled');
+  } else {
+      alert('Sorry, the maximum value was reached');
+      $(this).val($(this).data('oldValue'));
+  }
+  
+  
+});
+// $(".input-number").keydown(function (e) {
+//       // Allow: backspace, delete, tab, escape, enter and .
+//       if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 190]) !== -1 ||
+//            // Allow: Ctrl+A
+//           (e.keyCode == 65 && e.ctrlKey === true) || 
+//            // Allow: home, end, left, right
+//           (e.keyCode >= 35 && e.keyCode <= 39)) {
+//                // let it happen, don't do anything
+//                return;
+//       }
+//       // Ensure that it is a number and stop the keypress
+//       if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+//           e.preventDefault();
+//       }
+// });
+
+
+$("#fontName").on('keyup change click', function(e) {
+  fontName = $(this).val();
+  d3.selectAll('svg').style("font-family", fontName);
+});
+
+
+$("#graphTitleEditor").on('keyup change click', function(e) {
+  graphTitle = $(this).val();
+  d3.select("#graphTitle").text(graphTitle);
+});
+
+$("#titleFontSize").on('keyup change click', function(e) {
+  titleFontSize = $(this).val();
+  d3.select("#graphTitle").style("font-size", (titleFontSize+"px"));
+});
+
+$("#yMin").on('keyup change click', function(e) {
+  if (!$(this).is( ":focus" )) {
+    yDomain[0] = $(this).val();
+    createBeeswarm(formData, false);
+  }
+});
+
+$("#yMax").on('keyup change click', function(e) {
+  if (!$(this).is( ":focus" )) {
+    yDomain[1] = $(this).val();
+    createBeeswarm(formData, false);
+  }
+});
+
+$("#horizontalAxisLabels").on('keyup change click', function(e) {
+  if (!$(this).is( ":focus" )) {
+    xDomain = $(this).val();
+
+    // Split into composite parts
+    xDomain = xDomain.split(/[ ,]+/); //split(",");
+
+    // Remove white spaces
+    for (var i = 0; i < xDomain.length; i++) {
+      xDomain[i] = xDomain[i].trim();
+    }
+
+    // Recreate plot
+    createBeeswarm(formData, false);
+
+    // update the form
+    $("#numBeeswarms").val(xDomain.length);
+
+  }
+});
+
+$("#axisStroke").on('keyup change click', function(e) {
+  d3.selectAll(".axis").style("stroke-width", $(this).val() + "px");
+  axisStrokeWidth = $(this).val();
+});
+
+$("#axisColor").on('keyup change click', function(e) {
+  d3.selectAll(".axis").selectAll("path, line").style("stroke", $(this).val());
+  axisStrokeColor = $(this).val();
+});
+
+$("#verticalAxisFontSize").on('keyup change click', function(e) {
+  d3.selectAll("#verticalAxis").selectAll("text").style("font-size", $(this).val() + "px");
+  verticalAxisFontSize = $(this).val();
+});
+
+$("#verticalAxisTickPadding").on('keyup change click', function(e) {  
+  yAxisTickPadding = $(this).val();
+  createBeeswarm(formData, false);
+});
+
+$("#verticalAxisLabelFontSize").on('keyup change click', function(e) {
+  d3.select("#verticalAxisLabel").style("font-size", $(this).val() + "px");
+  verticalAxisLabelFontSize = $(this).val();
+});
+
+$("#verticalAxisLabelPadding").on('keyup change click', function(e) {
+  yAxisLabelPadding = $(this).val();
+  createBeeswarm(formData, false);
+});
+
+$("#horizontalAxisFontSize").on('keyup change click', function(e) {
+  d3.selectAll("#horizontalAxis").selectAll("text").style("font-size", $(this).val() + "px");
+  horizontalAxisFontSize = $(this).val();
+});
+
+$("#horizontalAxisLabelPadding").on('keyup change click', function(e) {
+  xAxisTickPadding = $(this).val();
+  createBeeswarm(formData, false);
+});
+
+$("#verticalAxisLabelInput").on('keyup change click', function(e) {
+  d3.select("#verticalAxisLabel").text($(this).val());
+  verticalAxisLabel = $(this).val();
+});
+
+$("#barWidth").on('keyup change click', function(e) {
+  barWidth = parseInt($(this).val());
+  createBeeswarm(formData, false);  
+});
+
+$("#barHeight").on('keyup change click', function(e) {
+  barHeight = parseInt($(this).val());
+  createBeeswarm(formData, false); 
+});
+
+$("#dotRadius").on('keyup change click', function(e) {
+  d3.select("svg").selectAll("circle").attr("r", $(this).val());
+  dotRadius = $(this).val();
+  if (dotRadius>spacingRadius) {
+    spacingRadius = dotRadius;
+    createBeeswarm(formData, false);
+  }
+});
+
+$("#dotSpacingRadius").on('keyup change click', function(e) {
+  spacingRadius = $(this).val();
+  createBeeswarm(formData, false);
+});
+
+$("#dataColors").on('keyup change click', function(e) {
+  if (!$(this).is( ":focus" )) {
+    barColors = $(this).val();
+
+    // Split into composite parts
+    barColors = barColors.split(/[ ,]+/); //split(",");
+
+    // Remove white spaces
+    for (var i = 0; i < barColors.length; i++) {
+      barColors[i] = barColors[i].trim();
+      // Make sure every color starts with "#"
+      if (barColors[i][0]!="#") {
+        barColors[i] = "#" + barColors[i];
+      }
+    }
+
+    while (barColors.length < 2) {
+      barColors.push.apply(barColors, barColors);
+    }
+
+    // Recreate plot
+    createBeeswarm(formData, false);
+  }
+});
+
+
+$("#rectWidth").on('keyup change click', function(e) {
+  rectWidth = parseInt($(this).val());
+  createBeeswarm(formData, false);
+  autoResize();
+});
+
+$("#rectHeight").on('keyup change click', function(e) {
+  rectHeight = parseInt($(this).val());
+  createBeeswarm(formData, false);
+  autoResize();
+});
+
+// Changing the number of beeswarms
+$("#numBeeswarms").on('keyup change click', function(e) {
+  numBeeswarms = $(this).val();
+  previousNumBeeswarms = formData.length;
+
+  beeswarmDifference = numBeeswarms - previousNumBeeswarms;
+
+  // pad the beeswarms
+  if (beeswarmDifference > 0) {
+    for (var i = 0; i < beeswarmDifference; i++) {
+      thisIndex = previousNumBeeswarms + i;
+      formData[thisIndex] = [];
+    }
+  } else if (beeswarmDifference < 0) {
+    for (var i = 0; i < Math.abs(beeswarmDifference); i++) {  
+      formData.splice(-1,1);
+      xDomain.splice(-1,1); 
+    }
+  }
+
+  // recreate the plot
+  createBeeswarm(formData, false);
+
+  // update the form
+  for (var i = 0; i < numDataInputFields; i++) {
+    thisInputField = "#" + dataInputFieldPrefix + (i+1).toString();
+    if (i < formData.length) {
+      $(thisInputField).val(formData[i].toString());  
+    } else {
+      $(thisInputField).val("");
+    }
+  }
+
+});
+
+$(".beeswarm-data").on('keyup change click', function(e) {
+  if (!$(this).is( ":focus" )) {
+    var thisGroup = $(this).attr("id");
+    var startChar = dataInputFieldPrefix.length;
+    var thisGroupNum = parseInt(thisGroup.substring(startChar));
+    var thisGroupIndex = thisGroupNum - 1;
+
+    var thisDataString = $(this).val();
+    var thisData;
+    // Remove data if it's empty
+    if (thisDataString.length == 0) {
+      thisData = [];
+
+      // And completely delete it if it's the last beeswarm, otherwise replace with 0. 
+      if (thisGroupNum == formData.length) {
+        formData.splice(-1,1); 
+        xDomain.splice(-1,1); 
+      } else {
+        thisData = [0];
+        formData[thisGroupIndex] = thisData; 
+      }
+      
+    } else {
+
+      // Split into composite parts
+      thisData = thisDataString.split(/[ ,]+/); // thisDataString.split(",");
+
+      // Remove white spaces
+      for (var i = 0; i < thisData.length; i++) {
+        thisData[i] = thisData[i].trim();
+      }
+
+      // Convert strings to numbers
+      thisData = thisData.map(Number);     
+
+      // Sort data
+      thisData.sort();
+
+      formData[thisGroupIndex] = thisData;   
+    }
+    // Recreate plot
+    createBeeswarm(formData, false);
+    
+  }
+});
+
+document.getElementById('toggleAverages').onclick = function() {
+  showAverages = 1-showAverages;
+  createBeeswarm(formData, false);
+};
+
+
+function getCSV(csvName){
+  
+  $.ajax({ 
+    timeout: 3000,
+    url: csvName, success: function(file_content) {
+      $.ajax({
+        async: false,
+        url: csvName, success: function(file_content){
+          csvData = $.csv.toArrays(file_content);
+          createBeeswarm(csvData, true);
+        }
+      });
+      
+    }, error: function (errorThrown) {
+        // alert("There was trouble getting the example data CSV. Feel free to load your own data!");
+        // $("#errorMessage").css({"display": "block"});
+
+        // Set to the default if we can't get the CSV.
+        csvData = [[2.650493419,30.88898025,6.347861844,3.8363499,9.310032903,3.673187256,1.466282897,5.902138159,9.768914472,16.67845396,1.474177313,20.36266448,3.270559209,25.62582238,9.981085519,14.17845396,2.005756578,13.52055922,6.874177631,3.928453938,6.415296047,14.83634868,4.191611847,11.03371711,6.196001163,14.3100329,6.7574001,3.703125,6.428453934,2.217927631,2.387335528,6.152138156,6.678453941,5.953125,18.52055922,2.518914472,12.99424343,9.836348678,6.691611853,4.454769744,8.783717091,28.91529604,1.43634515,16.15213815,4.981085519,4.967927616,15.03207237,6.810032881,4.046875,2.268914475], [6.831081997,15.88898027,20.23108553,14.70476975,32.99424342,25.49424343,22.87582238,2.612664475,33.78371711,4.178453947,13.78371712,8.125822378,7.467927622,12.59950659,21.28371711,8.571546053,14.88733553,5.295230266,26.41529604,16.54687499,11.02055921,9.836348672,3.439967106,12.86266448,10.63898026,29.44161184,26.94161184,7.994243431,22.66365132,26.72944079,18.78371711,26.41529607,11.94161184,22.19687132,16.8100329,17.3363487,13.38898026,17.46792763,11.59950778,15.88898025,7.599506569,3.783717103,15.85309602,17.46792765,5.888980272,11.2837171,18.57154605,8.652138156,24.17845394,7.518914472], [5.431743422,1.541940788,41.79851975,8.596217103,16.00904604,21.00904606,3.135358306,7.668585528,12.27384868,9.115953947,30.30674342,38.50904606,10.48273027,3.772203947,29.83141448,4.510690788,5.964638159,12.58799341,4.905427631,19.24753289,19.95641446,11.93009868,3.048852216,12.53700658,21.87911184,18.58963816,20.70148026,10.95805921,23.72121711,7.982730263,7.668585525,14.24753289,35.37220144,12.98273027,9.956414472,9.451147781,10.95805921,14.38569079,19.43009869,7.148848684,8.063322369,8.458059213,13.85279605,18.7212171,3.647203947,27.80674342,0.88404605,22.32483552,2.982730263,17.80016448], [6.535361841,12.06167762,6.403782894,17.01069079,6.410361841,32.98273028,11.4037829,25.4317414,18.37746711,23.37746709,1.754111844,13.50904604,11.87911184,2.989309209,12.85773028,4.962993419,25.16858552,23.90378289,13.85279605,8.245888156,14.69325659,7.199835519,16.66694078,19.31956882,10.43174342,18.64062499,21.53536185,9.035361844,7.587993416,13.515625,35.48273025,1.798519738,12.98930921,16.61595395,6.666940791,27.71957234,15.19325497,9.035361841,15.74588816,28.58963817,21.14062501,24.29851974,20.82648025,4.430098684,10.03700658,22.85115134,9.03536185,19.43009867,5.614309209,7.068256572]];
+        createBeeswarm(csvData, true);
+
+    }
+  });
+}
+
+
+function mean(numbers) {
+    var total = 0, i;
+    for (i = 0; i < numbers.length; i += 1) {
+        total += numbers[i];
+    }
+    return total / numbers.length;
+}
+
+function min(arr) {
+  var thisMin = Math.min.apply(null, arr);
+  return thisMin;
+}
+
+function max(arr) {
+  var thisMax = Math.max.apply(null, arr);
+  return thisMax;
+}
+
+function abs(value) {
+  return Math.abs(value);
+}
+
+function stringArrayToNumberArray(thisArray){
+  thisArray = thisArray.map(Number);
+  return thisArray;
+}
+
+function deepCopy(obj) {
+  if (Object.prototype.toString.call(obj) === '[object Array]') {
+      var out = [], i = 0, len = obj.length;
+      for ( ; i < len; i++ ) {
+          out[i] = arguments.callee(obj[i]);
+      }
+      return out;
+  }
+  if (typeof obj === 'object') {
+      var out = {}, i;
+      for ( i in obj ) {
+          out[i] = arguments.callee(obj[i]);
+      }
+      return out;
+  }
+  return obj;
+}
+
+function isAPIAvailable() {
+  // Check for the various File API support.
+  if (window.File && window.FileReader && window.FileList && window.Blob) {
+    // Great success! All the File APIs are supported.
+    return true;
+  } else {
+    // source: File API availability - http://caniuse.com/#feat=fileapi
+    // source: <output> availability - http://html5doctor.com/the-output-element/
+    document.writeln('The HTML5 APIs used in this form are only available in the following browsers:<br />');
+    // 6.0 File API & 13.0 <output>
+    document.writeln(' - Google Chrome: 13.0 or later<br />');
+    // 3.6 File API & 6.0 <output>
+    document.writeln(' - Mozilla Firefox: 6.0 or later<br />');
+    // 10.0 File API & 10.0 <output>
+    document.writeln(' - Internet Explorer: Not supported (partial support expected in 10.0)<br />');
+    // ? File API & 5.1 <output>
+    document.writeln(' - Safari: Not supported<br />');
+    // ? File API & 9.2 <output>
+    document.writeln(' - Opera: Not supported');
+    return false;
+  }
+}
+
+function handleFileSelect(evt) {
+  var files = evt.target.files; // FileList object
+  var file = files[0];
+
+  // read the file metadata
+  var output = '';
+      output += '<span style="font-weight:bold;">' + escape(file.name) + '</span><br />\n';
+      output += ' - FileType: ' + (file.type || 'n/a') + '<br />\n';
+      output += ' - FileSize: ' + file.size + ' bytes<br />\n';
+      output += ' - LastModified: ' + (file.lastModifiedDate ? file.lastModifiedDate.toLocaleDateString() : 'n/a') + '<br />\n';
+
+  // read the file contents
+  // printTable(file);
+  readCSV(file);
+}
+
+function createBeeswarm(data, overrideYDomain){
+  d3.selectAll('svg').remove(); // Clear all contents
+  allData = data;
+  stringData = deepCopy(data);
+  
+  correctAverages = [];
+  numDatapoints   = [];
+  minVals         = [];
+  maxVals         = [];
+
+  // Convert strings to numbers
+  for (var i = 0; i < allData.length; i++) {
+    allData[i].clean(""); // remove empty values
+    allData[i]      = allData[i].map(Number); // convert to numbers
+    numDatapoints[i]    = allData[i].length;
+    minVals[i]          = min(allData[i]);
+    maxVals[i]          = max(allData[i]); 
+    correctAverages[i]  = mean(allData[i]);
+  }
+
+
+  var numBars = correctAverages.length;
+
+  // set up domains
+ 
+  
+  var maxVal = max(maxVals);
+  var minVal = min(minVals);
+  var totalRange = abs(abs(maxVal) - abs(minVal));
+
+  var minimumAxisValue = Math.round(minVal - totalRange/8);
+  var maximumAxisValue = Math.round(maxVal + totalRange/8);
+  
+  // if (yDomain == null) {
+  //  yDomain = [minimumAxisValue, maximumAxisValue];
+  // };
+
+  if (overrideYDomain) {
+    yDomain = [minimumAxisValue, maximumAxisValue];
+  }
+  
+  // var minVal = yDomain[0]; //padding;
+  // var maxVal = yDomain[1]; //rectHeight-padding;
+
+  // fix correctAverages if any are nonsenical (i.e., NaNs)
+  for (var i = 0; i < correctAverages.length; i++) {
+    if ( isNaN(correctAverages[i]) ) {
+      correctAverages[i] = minVal;
+    }
+  }
+
+  // pad xDomain if smaller than numBars, or numBars and the rest if smaller than xDomain
+  if (xDomain == null) {
+    xDomain = alphabet.slice(0,numBars);
+
+  } else if ( xDomain.length < numBars) {
+
+    var startIndex = xDomain.length;
+    var endIndex = startIndex + (numBars - xDomain.length);
+    var groupNamesToAdd = alphabet.slice(startIndex, endIndex);
+    xDomain = xDomain.concat(groupNamesToAdd);
+
+  } else if (xDomain.length > numBars){  
+    paddingDifference = xDomain.length - numBars;
+    previousNumBars = numBars;
+    for (var i = 0; i < paddingDifference; i++) {  
+      thisIndex = previousNumBars + i;
+      allData[thisIndex]        = [minVal];
+      numDatapoints[thisIndex]  = allData[thisIndex].length;
+
+      minVals[thisIndex]         = minVal;
+      maxVals[thisIndex]         = minVal; 
+      correctAverages[thisIndex] = minVal;
+    }
+    numBars = xDomain.length;
+  }
+
+  // Set up color looping
+  while (barColors.length < numBars) {
+    barColors.push.apply(barColors, barColors);
+  }
+
+  // Create the SVG
+  var svg = d3.select("#svgHolder").append("svg")
+      .attr("width", rectWidth)
+      .attr("height", rectHeight)
+      .attr("id", "mySVG")
+      .style("overflow", "visible")
+      .style("margin", "0 auto");
+
+  var axis = d3.svg.axis();
+
+  // Add a background
+  svg.append("rect")
+    .attr("class", "backgroundBox")
+    .attr("width", rectWidth)
+    .attr("height", rectHeight)
+    .attr("id", "graphRect")
+    .attr("name", "graphRect")
+    .attr("rx", rectBorderRadius)
+    .attr("ry", rectBorderRadius)
+    .style("stroke", rectStrokeColor)
+    .style("stroke-width", rectStrokeWidth)
+    .style("fill", rectBackgroundColor)
+    .call(axis);
+
+
+  // Make scales and axes
+
+  xScale = d3.scale.ordinal()
+                  .domain(xDomain)
+                  //.domain(['A', 'B']) // ['A']
+                  //.range([widthPadding, rectWidth-widthPadding]);
+                  .rangeRoundBands([widthPadding, rectWidth-widthPadding], 0, 0);
+
+  yScale = d3.scale.linear()
+                 .domain(yDomain)
+                 .range([rectHeight-heightPadding, heightPadding]);
+
+
+  xAxis = d3.svg.axis()
+                .scale(xScale)
+                .tickPadding(xAxisTickPadding)
+      //        .tickSize(20)                
+                .orient("bottom");
+
+  yAxis = d3.svg.axis()
+                .scale(yScale)
+                .tickPadding(yAxisTickPadding)
+                .orient("left");
+
+  // to convert barPositions into axis terms
+  var xConversionScale = d3.scale.linear()
+                .range([0, rectWidth])
+                .domain([widthPadding, rectWidth-widthPadding]);
+
+  var yConversionScale = d3.scale.linear()
+                 .range([0, rectHeight])
+                 .domain([rectHeight-heightPadding, heightPadding]);
+
+  var xTickPositions = [];
+  var currTick = 0;
+
+  // Horizontal axis
+  svg.append("g")
+      .attr("class", "axis")  //Assign "axis" class
+      .attr("id", "horizontalAxis")
+      .attr("transform", "translate(0," + (rectHeight - heightPadding) + ")")
+      .style("stroke-width", axisStrokeWidth)
+      .call(xAxis)
+      // Get axis tick positions
+      .selectAll(".tick").each(function() {
+          var tick = d3.select(this);
+          // pull the transform data out of the tick
+          var position = d3.transform(tick.attr("transform")).translate;
+          
+          // passed in "data" is the value of the tick, transform[0] holds the X value
+          xTickPositions[currTick] =  position[0];
+          currTick = currTick + 1;
+  });
+
+  // Vertical axis
+  svg.append("g")
+      .attr("class", "axis")  //Assign "axis" class
+      .attr("id", "verticalAxis")
+      .style("stroke-width", axisStrokeWidth)
+      .attr("transform", "translate(" + (widthPadding) + ",0)")
+      .call(yAxis);
+
+  // text label for the y axis
+  svg.append("text")
+      .attr("id", "verticalAxisLabel")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 + yAxisLabelPadding)
+      .attr("x",0 - (rectHeight / 2))
+      .attr("dy", "1em")      
+      .style("text-anchor", "middle")
+      .style("font-size", verticalAxisLabelFontSize+"px")
+      .text(verticalAxisLabel);   
+
+  // rescale the data for beeswarm purposes; the beeswarm needs to be natively in pixels if not going with my leftJustify or center methods
+
+  origData = deepCopy(allData);
+  formData = deepCopy(allData);
+  scaledData = deepCopy(allData); // allData.slice(0); //allData.concat([]); // allData; // these commented methods all result in the same data being given multiple pointers.
+
+
+  for (var iData = 0; iData < allData.length; ++iData){
+    for (var j = 0; j < allData[iData].length; ++j){
+      scaledData[iData][j] = yScale(allData[iData][j]);
+    }
+  }
+
+  if (useScaledData==1) {
+    allData = scaledData;
+  }
+
+  // define data
+  intermediateData = [];
+  finalData = [];
+
+  for (iData = 0; iData < allData.length; ++iData){
+      
+      var xAxisCenter = xTickPositions[iData];
+      
+      var testData = allData[iData];
+      
+      var beeswarm, num_data = numDatapoints[iData],
+      thisMin = minVal, thisMax = maxVal,
+      xaxis = xAxisCenter, radius = spacingRadius,
+      dataset = [], j;
+      
+      for (j = 0; j < num_data; ++j)
+      dataset.push({
+          'x': undefined,
+          'y': testData[j] //Math.floor(Math.random() * (max - min + 1)) + min
+      });
+      beeswarm = new Beeswarm(dataset, xaxis, radius);
+      
+      var data = beeswarm.swarm();
+      
+      if (leftJustifyOn==1){
+          data = leftJustify(data,xAxisCenter-justifyPadding);
+      }
+      
+      if (centerOn==1){
+        data = centerData(data,xAxisCenter);
+      }
+      intermediateData[iData] = data; // holds all the data, but still broken up into separate mini-arrays
+      if (dotColorOn == 1) {
+        intermediateData[iData].color = barColors[iData];  
+      } else {
+        intermediateData[iData].color = "#000000";  
+      }
+      
+  }
+
+  // recombine the data into one array for presentation
+  var trueIndex = 0;
+  for (iData = 0; iData < intermediateData.length; ++iData){
+      
+      for (k = 0; k < intermediateData[iData].length; ++k){
+          finalData[trueIndex] = intermediateData[iData][k];
+          finalData[trueIndex].color = intermediateData[iData].color;
+          trueIndex = trueIndex + 1;
+      }    
+  }
+
+  // plot datasets
+  d3.select("svg").selectAll("circle")
+    .data(finalData)
+    .enter()
+    .append("circle")      
+    .attr("cx", function(d) {
+      return d.x; // because the x-axis is ordinal, these values are straight up svg positions
+    })
+    .attr("cy", function(d) {
+      if (useScaledData==1){
+        return d.y;
+      } else {
+        return yScale(d.y); // yScale necessary to convert data into positions
+      }
+    })
+    .attr("r", dotRadius)
+    .attr("fill", function(d) {
+      return d.color;
+    });
+
+
+
+
+  // plot averages of data
+  if (showAverages == 1) {
+    for (var i = 0; i < correctAverages.length; i++) {
+      d3.select("svg").append("rect")
+        .attr("transform", "translate(" + (xTickPositions[i]-barWidth/2) + "," + (yScale(correctAverages[i])-barHeight/2) + ")")
+        .attr("width", barWidth)
+        .attr("height", barHeight)
+        .attr("class", "feedbackBar")
+        .attr("fill", barColors[i]) // #22A8FF
+        .attr("id", barNamePrefix.concat(parseInt(i+1)) ) // new
+        .attr("name", barNamePrefix.concat(parseInt(i+1)) ) // new
+        .style("cursor", "pointer");
+    }
+  }
+
+  if (titleOn == 1) {
+    d3.select("svg").append("text")
+      .attr("id", "graphTitle") 
+      .attr("x", (rectWidth/2))             
+      .attr("y", 40)
+      .attr("text-anchor", "middle")  
+      .style("font-size", (titleFontSize+"px")) 
+      .style("text-color", "#000000")
+      .style("text-decoration", "underline")  
+      .style("font-weight", "bold")
+      .text(graphTitle);
+  }  
+
+  // Do any last-minute styling
+  d3.select("#errorMessage").style({"display": "none"});
+  d3.select("#optionsHolder").style("display", "block");
+  d3.select("#save").style("display", "inline-block");
+  d3.selectAll('svg').style("font-family", fontName);
+  if (dotStrokeOn == 1) {
+    d3.selectAll("svg").selectAll("circle").style("stroke", dotStrokeColor);
+    d3.selectAll("svg").selectAll("circle").style("stroke-width", (dotStrokeWidth+"px"));
+  }
+  
+  d3.select("#horizontalAxis").selectAll("text")
+    .style("font-size", (horizontalAxisFontSize+"px"));
+
+  d3.select("#verticalAxis").selectAll("text")
+    .style("font-size", (verticalAxisFontSize+"px"));
+
+  setFormValues();
+}
+
+
+function setFormValues(){
+  $("#fontName").val(fontName);
+  $("#graphTitleEditor").val(graphTitle);
+  $("#titleFontSize").val(titleFontSize);
+  $("#horizontalAxisLabels").val(xDomain.toString());
+  $("#axisStroke").val(axisStrokeWidth);
+  $("#axisColor").val(axisStrokeColor);
+  $("#yMin").val(yDomain[0]);
+  $("#yMax").val(yDomain[1]);
+  $("#verticalAxisFontSize").val(verticalAxisFontSize);
+  $("#verticalAxisTickPadding").val(yAxisTickPadding);
+  $("#horizontalAxisFontSize").val(horizontalAxisFontSize);
+  $("#horizontalAxisLabelPadding").val(xAxisTickPadding);
+  $("#barWidth").val(barWidth);
+  $("#barHeight").val(barHeight);
+  $("#dotRadius").val(dotRadius);
+  $("#dotSpacingRadius").val(spacingRadius);
+  $("#dataColors").val(barColors.toString());
+  $("#rectWidth").val(rectWidth);
+  $("#rectHeight").val(rectHeight);
+  $("#verticalAxisLabelFontSize").val(verticalAxisLabelFontSize);
+  $("#verticalAxisLabelPadding").val(yAxisLabelPadding);
+  $("#verticalAxisLabelInput").val(verticalAxisLabel);
+  $("#numBeeswarms").val(origData.length);
+
+  numBeeswarms = origData.length;
+  previousNumBeeswarms = numBeeswarms;
+
+  for (var i = 0; i < origData.length; i++) {
+    thisInputField = "#" + dataInputFieldPrefix + (i+1).toString();
+    $(thisInputField).val(origData[i].toString());
+  }
+}
+
+function readCSV(file){
+  var data, csv;
+  var reader = new FileReader();
+
+  readSuccess = function(evt){
+    csv = evt.target.result;
+    data = $.csv.toArrays(csv);
+    createBeeswarm(data, true);
+  };
+  reader.onload = readSuccess;
+  reader.onerror = function(){ alert('Unable to read ' + file.fileName); };
+  reader.readAsText(file);
+}
+
+
+// Left justify everything to leftPosition; this assumes that the data are binned so that they aren't completely continuously distributed. 
+function leftJustify(swarm,  leftPosition){
+  
+    var yVals = [];
+    for (i = 0; i < swarm.length; ++i) {
+      yVals.push(swarm[i].y);
+    }
+    
+    // Get unique y values (remove duplicates)
+    var uniqueYVals = yVals.filter(function(item, i, ar){ return ar.indexOf(item) === i; });
+    var numRows = uniqueYVals.length;
+    var rowVals = [];
+    
+    // populate the array with the rowVals with the leftPosition value
+    for (i = 0; i < numRows; ++i) {
+      rowVals[i] = leftPosition;    
+    }
+    
+    // figure out new x-positions for the dots
+    for (j = 0; j < yVals.length; ++j) {
+        row = uniqueYVals.indexOf(swarm[j].y); // find which row the datapoint belongs to
+        swarm[j].x = rowVals[row];         // position it along the x-axis accordingly
+        rowVals[row] = rowVals[row] + (spacingRadius*2); // next dot gets placed enough space away
+    }
+    return swarm;
+    
+    
+}
+
+function centerData(swarm,  centerPosition){
+  
+
+    var yVals = [];
+    for (i = 0; i < swarm.length; ++i) {
+      yVals.push(swarm[i].y);
+    }
+    
+    // Get unique y values (remove duplicates)
+    var uniqueYVals = yVals.filter(function(item, i, ar){ return ar.indexOf(item) === i; });
+    var numRows = uniqueYVals.length;
+    var rowVals = [];
+    var rowLengths = [];
+    var rowSides = []; // 1 = right, 0 = left
+    var spacingArray = [];
+    
+    // populate the array with the rowVals with the centerPosition value
+    for (i = 0; i < numRows; ++i) {
+      rowVals[i] = centerPosition;    
+        rowLengths[i] = 0;
+        rowSides[i] = 1; // start on right side by defauly
+        spacingArray[i] = spacingRadius;
+    }
+    
+    // figure out new x-positions for the dots
+    for (j = 0; j < yVals.length; ++j) {
+        row = uniqueYVals.indexOf(swarm[j].y); // find which row the datapoint belongs to
+        swarm[j].x = rowVals[row];         // position it along the x-axis accordingly
+        rowLengths[row] = rowLengths[row] + 1; 
+        rowSides[row] = rowLengths[row] % 2; 
+        spacingArray[row] = -spacingArray[row];
+        rowVals[row] = centerPosition + Math.round(rowLengths[row]/2) * (spacingArray[row]*2); // next dot gets placed enough space away        
+    }
+    
+    // fix those rows with even numbers of dots - subtract spacingRadius from every dot in the row
+    for (j = 0; j < yVals.length; ++j) {
+        
+        row = uniqueYVals.indexOf(swarm[j].y);
+        odd = rowLengths[row] % 2;
+        if (odd==0 && rowLengths[row]>1) {
+            swarm[j].x = swarm[j].x + spacingRadius;
+        }
+    }
+    return swarm;
+}
+
+// Function to remove empty values
+Array.prototype.clean = function(deleteValue) {
+  for (var i = 0; i < this.length; i++) {
+    if (this[i] === deleteValue) {         
+      this.splice(i, 1);
+      i--;
+    }
+  }
+  return this;
+};
+
+
+//]]> 
+
+</script>
+
+  <script>
+  // tell the embed parent frame the height of the content
+  if (window.parent && window.parent.parent){
+    window.parent.parent.postMessage(["resultsFrame", {
+      height: document.body.getBoundingClientRect().height,
+      slug: "Lb4Lzczx"
+    }], "*")
+  }
+</script>
+
+</body>
+
+</html>
+
