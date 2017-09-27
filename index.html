@@ -1187,7 +1187,6 @@ $(".beeswarm-data").on('keyup change click', function(e) {
 			}
 
   		} else {
-
 			// Split into composite parts
 			thisData = thisDataString.split(/[ ,]+/); // thisDataString.split(",");
 
@@ -1201,7 +1200,6 @@ $(".beeswarm-data").on('keyup change click', function(e) {
 
 			// Sort data
 			thisData.sort();
-
 			formData[thisGroupIndex] = thisData;   
 		}
 		// Recreate plot
@@ -1326,7 +1324,6 @@ function createBeeswarm(data, overrideYDomain){
 	d3.selectAll('svg').remove(); // Clear all contents
 	allData = data;
 	stringData = deepCopy(data);
-
 	correctAverages = [];
 	numDatapoints   = [];
 	minVals         = [];
@@ -1432,11 +1429,9 @@ function createBeeswarm(data, overrideYDomain){
 	var xConversionScale = d3.scale.linear()
 								.range([0, rectWidth])
 								.domain([widthPadding, rectWidth-widthPadding]);
-
 	var yConversionScale = d3.scale.linear()
 									.range([0, rectHeight])
 									.domain([rectHeight-heightPadding, heightPadding]);
-
 	var xTickPositions = [];
 	var currTick = 0;
 
@@ -1496,16 +1491,12 @@ function createBeeswarm(data, overrideYDomain){
 	finalData = [];
 
 	for (iData = 0; iData < allData.length; ++iData){
-
 		var xAxisCenter = xTickPositions[iData];
-
 		var testData = allData[iData];
-
 		var beeswarm, num_data = numDatapoints[iData],
 		thisMin = minVal, thisMax = maxVal,
 		xaxis = xAxisCenter, radius = spacingRadius,
 		dataset = [], j;
-
 		for (j = 0; j < num_data; ++j) {
 			dataset.push({
 				'x': undefined,
@@ -1531,7 +1522,6 @@ function createBeeswarm(data, overrideYDomain){
 	// recombine the data into one array for presentation
 	var trueIndex = 0;
 	for (iData = 0; iData < intermediateData.length; ++iData){
-
 		for (k = 0; k < intermediateData[iData].length; ++k){
 			finalData[trueIndex] = intermediateData[iData][k];
 			finalData[trueIndex].color = intermediateData[iData].color;
