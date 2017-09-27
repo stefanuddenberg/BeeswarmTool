@@ -1436,6 +1436,9 @@ function createBeeswarm(data, overrideYDomain){
 		.style("font-size", verticalAxisLabelFontSize+"px")
 		.text(verticalAxisLabel);   
 
+	// axis coloring
+	d3.selectAll(".axis").selectAll("path, line").style("stroke", axisStrokeColor);
+	
 	// rescale the data for beeswarm purposes; the beeswarm needs to be natively in pixels if not going with my leftJustify or center methods
 	origData = deepCopy(allData);
 	formData = deepCopy(allData);
