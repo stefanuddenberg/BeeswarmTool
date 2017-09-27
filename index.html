@@ -1137,7 +1137,6 @@ $(".beeswarm-data").on('keyup change click', function(e) {
 		var startChar = dataInputFieldPrefix.length;
 		var thisGroupNum = parseInt(thisGroup.substring(startChar));
 		var thisGroupIndex = thisGroupNum - 1;
-
 		var thisDataString = $(this).val();
 		var thisData;
 		// Remove data if it's empty
@@ -1298,7 +1297,7 @@ function createBeeswarm(data, overrideYDomain){
 	// Convert strings to numbers
 	for (var i = 0; i < allData.length; i++) {
 		allData[i].clean(""); // remove empty values
-		allData[i]      = allData[i].map(Number); // convert to numbers
+		allData[i]      	= allData[i].map(Number); // convert to numbers
 		numDatapoints[i]    = allData[i].length;
 		minVals[i]          = min(allData[i]);
 		maxVals[i]          = max(allData[i]); 
@@ -1353,11 +1352,11 @@ function createBeeswarm(data, overrideYDomain){
 
 	// Create the SVG
 	var svg = d3.select("#svgHolder").append("svg")
-				.attr("width", rectWidth)
-				.attr("height", rectHeight)
-				.attr("id", "mySVG")
-				.style("overflow", "visible")
-				.style("margin", "0 auto");
+		.attr("width", rectWidth)
+		.attr("height", rectHeight)
+		.attr("id", "mySVG")
+		.style("overflow", "visible")
+		.style("margin", "0 auto");
 
 	var axis = d3.svg.axis();
 
@@ -1377,27 +1376,27 @@ function createBeeswarm(data, overrideYDomain){
 
   // Make scales and axes
 	xScale = d3.scale.ordinal()
-				.domain(xDomain)
-				.rangeRoundBands([widthPadding, rectWidth-widthPadding], 0, 0);
+		.domain(xDomain)
+		.rangeRoundBands([widthPadding, rectWidth-widthPadding], 0, 0);
 	yScale = d3.scale.linear()
-				.domain(yDomain)
-				.range([rectHeight-heightPadding, heightPadding]);
+		.domain(yDomain)
+		.range([rectHeight-heightPadding, heightPadding]);
 	xAxis = d3.svg.axis()
-				.scale(xScale)
-				.tickPadding(xAxisTickPadding)
-				.orient("bottom");
+		.scale(xScale)
+		.tickPadding(xAxisTickPadding)
+		.orient("bottom");
 	yAxis = d3.svg.axis()
-				.scale(yScale)
-				.tickPadding(yAxisTickPadding)
-				.orient("left");
+		.scale(yScale)
+		.tickPadding(yAxisTickPadding)
+		.orient("left");
 
   // convert barPositions into axis terms
 	var xConversionScale = d3.scale.linear()
-								.range([0, rectWidth])
-								.domain([widthPadding, rectWidth-widthPadding]);
+		.range([0, rectWidth])
+		.domain([widthPadding, rectWidth-widthPadding]);
 	var yConversionScale = d3.scale.linear()
-									.range([0, rectHeight])
-									.domain([rectHeight-heightPadding, heightPadding]);
+		.range([0, rectHeight])
+		.domain([rectHeight-heightPadding, heightPadding]);
 	var xTickPositions = [];
 	var currTick = 0;
 
@@ -1420,11 +1419,11 @@ function createBeeswarm(data, overrideYDomain){
 
 	// Vertical axis
 	svg.append("g")
-	  .attr("class", "axis")  //Assign "axis" class
-	  .attr("id", "verticalAxis")
-	  .style("stroke-width", axisStrokeWidth)
-	  .attr("transform", "translate(" + (widthPadding) + ",0)")
-	  .call(yAxis);
+		.attr("class", "axis")  //Assign "axis" class
+		.attr("id", "verticalAxis")
+		.style("stroke-width", axisStrokeWidth)
+		.attr("transform", "translate(" + (widthPadding) + ",0)")
+		.call(yAxis);
 
 	// text label for the y axis
 	svg.append("text")
@@ -1523,24 +1522,24 @@ function createBeeswarm(data, overrideYDomain){
 				.attr("width", barWidth)
 				.attr("height", barHeight)
 				.attr("class", "feedbackBar")
-			    .attr("fill", barColors[i]) // #22A8FF
-			    .attr("id", barNamePrefix.concat(parseInt(i+1)) ) // new
-			    .attr("name", barNamePrefix.concat(parseInt(i+1)) ) // new
-			    .style("cursor", "pointer");
+				.attr("fill", barColors[i]) // #22A8FF
+				.attr("id", barNamePrefix.concat(parseInt(i+1)) ) // new
+				.attr("name", barNamePrefix.concat(parseInt(i+1)) ) // new
+				.style("cursor", "pointer");
 		}
 	}
 
 	if (titleOn == 1) {
 		d3.select("svg").append("text")
-		.attr("id", "graphTitle") 
-		.attr("x", (rectWidth/2))             
-		.attr("y", 40)
-		.attr("text-anchor", "middle")  
-		.style("font-size", (titleFontSize+"px")) 
-		.style("text-color", "#000000")
-		.style("text-decoration", "underline")  
-		.style("font-weight", "bold")
-		.text(graphTitle);
+			.attr("id", "graphTitle") 
+			.attr("x", (rectWidth/2))             
+			.attr("y", 40)
+			.attr("text-anchor", "middle")  
+			.style("font-size", (titleFontSize+"px")) 
+			.style("text-color", "#000000")
+			.style("text-decoration", "underline")  
+			.style("font-weight", "bold")
+			.text(graphTitle);
 	}  
 
 	// Do any last-minute styling
